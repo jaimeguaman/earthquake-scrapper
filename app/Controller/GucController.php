@@ -21,8 +21,8 @@ Class GucController extends Controller {
     ];
 
 /**
- * [$scrapper description]
- * @var [type]
+ * Scrapper class
+ * @var object
  */
     private $scrapper;
 
@@ -44,9 +44,8 @@ Class GucController extends Controller {
  */
     public function beforeFilter() {
         parent::beforeFilter();
-        
+
         $endpoint = 'http://sismologia.cl/events/listados/%YEAR%/%MONTH%/%YEAR%%MONTH%%DAY%.html';
-        
         $endpointTokens = [
             '%YEAR%',
             '%MONTH%',
@@ -78,11 +77,10 @@ Class GucController extends Controller {
 
 /**
  * [getFromtoday description]
- * @param  string $mode [description]
  * @return [type]       [description]
  */
-    public function getFromtoday($mode = 'verbose') {
-        $currentUTCTimestamp = strtotime(date('Y-m-d H:i:s', time()));
+    public function getFromtoday() {
+        $currentUTCTimestamp = time();
         $currentUTCDate = date('Y-m-d', $currentUTCTimestamp);
 
         $this->dateBounds = [
