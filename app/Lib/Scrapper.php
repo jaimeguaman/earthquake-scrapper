@@ -2,9 +2,9 @@
 App::uses('simple_html_dom', 'Lib/SimpleHTMLDom');
 
 Class Scrapper{
-    private $dom = null;
-    private $endpoint = null;
-    private $endpointTokens = null;
+    private $dom;
+    private $endpoint;
+    private $endpointTokens = [];
     
     public function __construct($endpoint, $endpointTokens){
         date_default_timezone_set('UTC');
