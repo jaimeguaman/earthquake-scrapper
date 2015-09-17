@@ -1,65 +1,113 @@
 <?php
+/**
+ * Load libs
+ */
 App::uses('Scrapper', 'Lib');
 App::uses('DatesUtils', 'Lib');
 
+/**
+ * GucController class
+ */
 Class GucController extends Controller {
 
-    public $uses=array(
+/**
+ * Load models
+ * @var array
+ */
+    public $uses = [
         'Agency',
         'Event',
         'EventMetadatum'
-    );
+    ];
 
+/**
+ * [$scrapper description]
+ * @var [type]
+ */
     private $scrapper;
+
+/**
+ * [$dateBounds description]
+ * @var [type]
+ */
     private $dateBounds;
+
+/**
+ * [$timeBounds description]
+ * @var [type]
+ */
     private $timeBounds;
     
-    public function beforeFilter(){
+/**
+ * [beforeFilter description]
+ * @return [type] [description]
+ */
+    public function beforeFilter() {
         date_default_timezone_set('UTC');
 
         $endpoint = 'http://sismologia.cl/events/listados/%YEAR%/%MONTH%/%YEAR%%MONTH%%DAY%.html';
         
-        $endpointTokens = array(
+        $endpointTokens = [
             '%YEAR%',
             '%MONTH%',
             '%DAY%'
-        );
+        ];
 
         $this->scrapper = new Scrapper($endpoint, $endpointTokens);
     }
     
-    public function getFromDateRange($startDate,$endDate){
-        $this->dateBounds = array(
-            'start'=>Date('Y-m-d', DatesUtils::toTimestamp($startDate)),
-            'end'=>Date('Y-m-d', DatesUtils::toTimestamp($endDate))
-        );
+/**
+ * [getFromDateRange description]
+ * @param  [type] $startDate [description]
+ * @param  [type] $endDate   [description]
+ * @return [type]            [description]
+ */
+    public function getFromDateRange($startDate, $endDate) {
+        $this->dateBounds = [
+            'start' => Date('Y-m-d', DatesUtils::toTimestamp($startDate)),
+            'end' => Date('Y-m-d', DatesUtils::toTimestamp($endDate))
+        ];
 
         $self = $this;
 
-        DatesUtils::rangeLoop($startDate,$endDate,function($day,$month,$year) use ($self){
-            $self->doScrapping($self->scrapper->getScrappingUrl(array($year,$month,$day)));
+        DatesUtils::rangeLoop($startDate,$endDate, function($day, $month, $year) use ($self) {
+            $self->doScrapping($self->scrapper->getScrappingUrl([$year, $month, $day]));
         }); 
 
     }
 
-    public function getFromtoday($mode='verbose'){
-        $currentUTCTimestamp = strtotime(date('Y-m-d H:i:s', time() ));
+/**
+ * [getFromtoday description]
+ * @param  string $mode [description]
+ * @return [type]       [description]
+ */
+    public function getFromtoday($mode = 'verbose') {
+        $currentUTCTimestamp = strtotime(date('Y-m-d H:i:s', time()));
         $currentUTCDate = date('Y-m-d', $currentUTCTimestamp );
 
-        $this->dateBounds = array(
+        $this->dateBounds = [
             'start' => $currentUTCDate,
             'end' => $currentUTCDate
-        );
+        ];
 
-        $this->timeBounds = array(
-            'start' => date('Y-m-d H:i:s', $currentUTCTimestamp ),
-            'end' => date('Y-m-d H:i:s', $currentUTCTimestamp )
-        );
+        $this->timeBounds = [
+            'start' => date('Y-m-d H:i:s', $currentUTCTimestamp),
+            'end' => date('Y-m-d H:i:s', $currentUTCTimestamp)
+        ];
 
-        $this->doScrapping($this->scrapper->getScrappingUrl( array( date('Y',$currentUTCTimestamp),date('m',$currentUTCTimestamp),date('d',$currentUTCTimestamp))) );
+        $this->doScrapping($this->scrapper->getScrappingUrl([
+            date('Y', $currentUTCTimestamp),
+            date('m', $currentUTCTimestamp),
+            date('d', $currentUTCTimestamp)
+        ]));
     }
 
-    private function doScrapping($endpoint){
+/**
+ * [doScrapping description]
+ * @param  [type] $endpoint [description]
+ * @return [type]           [description]
+ */
+    private function doScrapping($endpoint) {
         $event = null;
         $earthquake = null;
 
@@ -67,33 +115,35 @@ Class GucController extends Controller {
         Debugger::dump('***INICIANDO SCRAPPING****');
 
         $content = $this->scrapper->getContent($endpoint);
-        if ($content){
+        if ($content) {
             $this->scrapper->domLoad($content);
             $tableList = $this->scrapper->findInDom('table tbody tr');
-        }else{
+        }
+        else {
           Debugger::dump('***ERROR, NO SE OBTUBIERON DATOS');  
         }
         
         //get each table node
         foreach ($tableList as $key => $table) {
-            $earthquakeData=array();
+            $earthquakeData = [];
+
             //get each data item
             foreach ($table->find('td') as $key => $tableItem) {
                 $earthquakeData[$key] = $tableItem->text();
             }
 
             //ignore invalid items
-            if ($earthquakeData){
+            if ($earthquakeData) {
                 $dateUTC = $earthquakeData[1];
                 $dateTs = DatesUtils::toTimestamp($dateUTC);
                 $dateSQL = DatesUtils::toSQLDate($dateUTC);
 
-                $eventData=array(
+                $eventData = [
                     'lat' => $earthquakeData[2],
                     'lon' => $earthquakeData[3],
                     'ts' => $dateSQL,
                     'hash' => md5($dateTs)
-                );
+                ];
 
                 /*  Evitar crear eventos duplicados que muestren erroneamente más de un evento siendo que se trata del mismo
                  *  pero actualizado.
@@ -103,18 +153,19 @@ Class GucController extends Controller {
 
                 $eventExists=$this->Event->checkForExists($eventData, $this->dateBounds);
 
-                if ($eventExists['exists']){
+                if ($eventExists['exists']) {
                     Debugger::dump('***EVENTO YA EXISTE ****');
                   //echo ('evento ya existe <br>');
                     $event = $eventExists;
-                }else{
+                }
+                else {
                     Debugger::dump('***NO SE ENCONTRO EVENTO, CREANDO ****');
                    $this->Event->create();
                    $event = $this->Event->save($eventData);
                 }
 
-                if ($event){
-                    $metadatum=array(
+                if ($event) {
+                    $metadatum = [
                         'event_id' => $event['Event']['id'],
                         'agency_id' => 1,
                         'lat' => $eventData['lat'],
@@ -123,18 +174,19 @@ Class GucController extends Controller {
                         'depth' => $earthquakeData[4],
                         'magnitude' => floatval($earthquakeData[5]),
                         'geo_reference' => $earthquakeData[6]
-                    );
+                    ];
 
-                    if (!$eventExists['exists']){
-                           Debugger::dump('***EVENTO NO EXISTE, SISMO TAMPOCO ****');
-                      
+                    if (!$eventExists['exists']) {
+                        Debugger::dump('***EVENTO NO EXISTE, SISMO TAMPOCO ****');
                        $this->EventMetadatum->create();
-                       $earthquake=$this->EventMetadatum->save($metadatum);
-                    }else{
-                        $earthquakeExists = $this->EventMetadatum->checkForExists($metadatum,$this->dateBounds,$eventExists['Event']['id']);
-                        if ($earthquakeExists['exists']){
+                       $earthquake = $this->EventMetadatum->save($metadatum);
+                    }
+                    else {
+                        $earthquakeExists = $this->EventMetadatum->checkForExists($metadatum, $this->dateBounds, $eventExists['Event']['id']);
+                        if ($earthquakeExists['exists']) {
                             Debugger::dump('***EVENTO EXISTE, SISMO TAMBIEN ****');
-                        }else{
+                        }
+                        else {
                             Debugger::dump('***EVENTO EXISTE, NUEVO SISMO NO. CREANDO NUEVO ASOCIADO A EVENTO****');
                             $this->EventMetadatum->create();
                             $earthquake = $this->EventMetadatum->save($metadatum);
@@ -144,12 +196,11 @@ Class GucController extends Controller {
 
                 }
 
-            }else{
+            }
+            else {
                 Debugger::dump('***NO HAY DATOS****');
             }
         }
     }
-
-
 
 }
