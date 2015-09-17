@@ -13,9 +13,7 @@ Class GucController extends ScrapperController {
     
     public function beforeFilter(){
         parent::beforeFilter();
-        
-        //TO-DO: hacer esto con un metodo con frefijo por país ;)
-       date_default_timezone_set('Chile/Continental');
+        date_default_timezone_set('Chile/Continental');
     }
     
     public function getFromDateRange($startDate,$endDate){
@@ -31,9 +29,9 @@ Class GucController extends ScrapperController {
             
             $self->doScrapping($self->getScrappingUrl(array($year,$month,$day)));
         }); 
-        die;
-       
+
     }
+
     public function getFromtoday($mode='verbose'){
         $currentUTCTimestamp=strtotime(date('Y-m-d H:i:s',time() ) . ' + 3 hours');
         $currentUTCDate=date('Y-m-d',$currentUTCTimestamp );
@@ -52,23 +50,21 @@ Class GucController extends ScrapperController {
         $this->dateBounds=$dateBounds;
         $this->timeBounds=$timeBounds;
         $this->doScrapping($this->getScrappingUrl( array( date('Y',$currentUTCTimestamp),date('m',$currentUTCTimestamp),date('d',$currentUTCTimestamp))) );
-        die;
     }
+
     public function doScrapping($endpoint){
         $event=null;
         $earthquake=null;
+
         Debugger::dump('endpoint: ' . $endpoint . '    _' . $_SERVER['HTTP_USER_AGENT']);
         Debugger::dump('***INICIANDO SCRAPPING****');
 
-        
-       
         $content=$this->getContent($endpoint);
         if ($content){
             $this->domLoad($content);
             $tableList = $this->dom->find('table tbody tr');
         }else{
           Debugger::dump('***ERROR, NO SE OBTUBIERON DATOS');  
-          die('NO HAY DATOS: ' . $endpoint);
         }
         
         //get each table node
@@ -122,18 +118,16 @@ Class GucController extends ScrapperController {
                     );
 
                     if (!$eventExists['exists']){
-                           Debugger::dump('***EVENTO NO EXISTE, TEMBLOR TAMPOCO ****');
+                           Debugger::dump('***EVENTO NO EXISTE, SISMO TAMPOCO ****');
                       
                        $this->EventMetadatum->create();
                        $earthquake=$this->EventMetadatum->save($metadatum);
                     }else{
                         $earthquakeExists=$this->EventMetadatum->checkForExists($metadatum,$this->dateBounds,$eventExists['Event']['id']);
                         if ($earthquakeExists['exists']){
-                            Debugger::dump('***EVENTO EXISTE, TEMBLOR TAMBIEN ****');
-                           //echo ('evento existe, temblor también <br>');
+                            Debugger::dump('***EVENTO EXISTE, SISMO TAMBIEN ****');
                         }else{
-                            Debugger::dump('***EVENTO EXISTE, TEMBLOR NO CREANDO NUEVO ASOCIADO A EVENTO****');
-                            //echo ('evento ya existe,temblor no, creando nuevo sismo asociado a evento <br>');
+                            Debugger::dump('***EVENTO EXISTE, NUEVO SISMO NO. CREANDO NUEVO ASOCIADO A EVENTO****');
                             $this->EventMetadatum->create();
                             $earthquake=$this->EventMetadatum->save($metadatum);
                         }
