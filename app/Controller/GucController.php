@@ -113,16 +113,16 @@ Class GucController extends Controller {
         Debugger::dump('***INICIANDO SCRAPPING****');
 
         $content = $this->scrapper->getContent($endpoint);
-        if ($content) {
-            $this->scrapper->domLoad($content);
-            $tableList = $this->scrapper->findInDom('table tbody tr');
+        if (!$content) {
+            Debugger::dump('***ERROR, NO SE OBTUBIERON DATOS');
+            return;
         }
-        else {
-          Debugger::dump('***ERROR, NO SE OBTUBIERON DATOS');  
-        }
+
+        $this->scrapper->domLoad($content);
+        $tableList = $this->scrapper->findInDom('table tbody tr');
         
         //get each table node
-        foreach ($tableList as $key => $table) {
+        foreach ($tableList as $table) {
             $earthquakeData = [];
 
             //get each data item
@@ -199,6 +199,8 @@ Class GucController extends Controller {
                 Debugger::dump('***NO HAY DATOS****');
             }
         }
+
+        return true;
     }
 
 }
