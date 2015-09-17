@@ -63,8 +63,8 @@ Class GucController extends Controller {
  */
     public function getFromDateRange($startDate, $endDate) {
         $this->dateBounds = [
-            'start' => Date('Y-m-d', DatesUtils::toTimestamp($startDate)),
-            'end' => Date('Y-m-d', DatesUtils::toTimestamp($endDate))
+            'start' => date('Y-m-d', DatesUtils::toTimestamp($startDate)),
+            'end' => date('Y-m-d', DatesUtils::toTimestamp($endDate))
         ];
 
         $self = $this;
@@ -130,9 +130,9 @@ Class GucController extends Controller {
 
             if (empty($earthquakeData)) {
                 Debugger::dump('***NO HAY DATOS****');
-                return;
+                continue;
             }
-            
+
             $dateUTC = $earthquakeData[1];
             $dateTs = DatesUtils::toTimestamp($dateUTC);
             $dateSQL = DatesUtils::toSQLDate($dateUTC);
