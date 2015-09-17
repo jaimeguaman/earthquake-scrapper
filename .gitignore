@@ -1,1 +1,19 @@
-app/tmp/
+# Created by https://www.gitignore.io/api/cakephp
+
+### CakePHP ###
+# CakePHP 3
+
+/vendor/*
+#/config/app.php
+/tmp/*
+/logs/*
+
+# CakePHP 2
+
+/app/tmp/*
+#/app/Config/core.php
+#/app/Config/database.php
+/vendors/*
+
+DS_*
+.thumb*
