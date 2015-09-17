@@ -43,8 +43,6 @@ Class GucController extends Controller {
  * @return [type] [description]
  */
     public function beforeFilter() {
-        date_default_timezone_set('UTC');
-
         $endpoint = 'http://sismologia.cl/events/listados/%YEAR%/%MONTH%/%YEAR%%MONTH%%DAY%.html';
         
         $endpointTokens = [
@@ -70,7 +68,7 @@ Class GucController extends Controller {
 
         $self = $this;
 
-        DatesUtils::rangeLoop($startDate,$endDate, function($day, $month, $year) use ($self) {
+        DatesUtils::rangeLoop($startDate, $endDate, function($day, $month, $year) use ($self) {
             $self->doScrapping($self->scrapper->getScrappingUrl([$year, $month, $day]));
         }); 
 
@@ -83,7 +81,7 @@ Class GucController extends Controller {
  */
     public function getFromtoday($mode = 'verbose') {
         $currentUTCTimestamp = strtotime(date('Y-m-d H:i:s', time()));
-        $currentUTCDate = date('Y-m-d', $currentUTCTimestamp );
+        $currentUTCDate = date('Y-m-d', $currentUTCTimestamp);
 
         $this->dateBounds = [
             'start' => $currentUTCDate,

@@ -33,7 +33,6 @@ Class Scrapper {
  * @param [type] $endpointTokens [description]
  */
     public function __construct($endpoint, $endpointTokens) {
-        date_default_timezone_set('UTC');
         $this->endpoint = $endpoint;
         $this->endpointTokens = $endpointTokens;
         $this->dom = new simple_html_dom;
