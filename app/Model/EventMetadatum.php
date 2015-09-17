@@ -39,39 +39,29 @@ class EventMetadatum extends AppModel {
 			'order' => ''
 		)
 	);
+
+/**
+ * [checkForExists description]
+ * @param  [type] $earthquakeData [description]
+ * @param  [type] $dateBounds     [description]
+ * @param  [type] $event_id        [description]
+ * @return [type]                 [description]
+ */
+    public function checkForExists($earthquakeData, $dateBounds, $event_id){
+        $return = [];
+        $return['exists'] = (bool)$this->find('count', [
+            'conditions' => [
+                'EventMetadatum.event_id' => $event_id,
+                'EventMetadatum.ts' => $earthquakeData['ts'],
+                'OR' => [
+                    'EventMetadatum.magnitude' => $earthquakeData['magnitude'],
+                    'EventMetadatum.lat' => $earthquakeData['lat'],
+                    'EventMetadatum.lon' => $earthquakeData['lon']
+                ]
+            ],
+            'limit' => 1
+        ]);
         
-        public function checkForExists($earthquakeData,$dateBounds,$eventId){
-            $ret=null;
-            $earthquakes=$this->find('all',array(
-                'conditions'=>array(
-                    'EventMetadatum.ts >=' => $dateBounds['start'] . ' 00:00:00',
-                    'EventMetadatum.ts <=' => $dateBounds['end'] . ' 23:59:59',
-                    'EventMetadatum.event_id' => $eventId
-                ) 
-            ));
-            
-            foreach ($earthquakes as $earthquake){
-                $existingEarthquakeDate=$earthquake['EventMetadatum']['ts'];
-                $newEarthquakeDate=$earthquakeData['ts'];
-                if ($existingEarthquakeDate == $newEarthquakeDate){
-                    if ($earthquake['EventMetadatum']['magnitude'] == $earthquakeData['magnitude'] OR
-                        $earthquake['EventMetadatum']['lat'] == $earthquakeData['lat'] OR
-                        $earthquake['EventMetadatum']['lon'] == $earthquakeData['lon']){
-                        $ret=array(
-                            'exists'=>true
-                        );  
-                        break;
-                    }
-                    
-                }else{
-                        $ret=array(
-                            'exists'=>false
-                        );   
-                }
-                
-            }
-            
-            return $ret;
-            
-        }
+        return $return;
+    }
 }
