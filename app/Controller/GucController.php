@@ -10,7 +10,9 @@ Class GucController extends Controller {
         'EventMetadatum'
     );
 
-    public $scrapper;
+    private $scrapper;
+    private $dateBounds;
+    private $timeBounds;
     
     public function beforeFilter(){
         date_default_timezone_set('UTC');
@@ -27,12 +29,13 @@ Class GucController extends Controller {
     }
     
     public function getFromDateRange($startDate,$endDate){
-        $dateBounds=array(
-            'start'=>Date('Y-m-d',DatesUtils::toTimestamp($startDate)),
-            'end'=>Date('Y-m-d',DatesUtils::toTimestamp($endDate))
+        $this->dateBounds = array(
+            'start'=>Date('Y-m-d', DatesUtils::toTimestamp($startDate)),
+            'end'=>Date('Y-m-d', DatesUtils::toTimestamp($endDate))
         );
 
         $self = $this;
+
         DatesUtils::rangeLoop($startDate,$endDate,function($day,$month,$year) use ($self){
             $self->doScrapping($self->scrapper->getScrappingUrl(array($year,$month,$day)));
         }); 
@@ -43,18 +46,16 @@ Class GucController extends Controller {
         $currentUTCTimestamp = strtotime(date('Y-m-d H:i:s', time() ));
         $currentUTCDate = date('Y-m-d', $currentUTCTimestamp );
 
-        $dateBounds=array(
-            'start'=>$currentUTCDate,
-            'end'=>$currentUTCDate
+        $this->dateBounds = array(
+            'start' => $currentUTCDate,
+            'end' => $currentUTCDate
         );
 
-        $timeBounds=array(
-            'start'=>date('Y-m-d H:i:s', $currentUTCTimestamp ),
-            'end'=>date('Y-m-d H:i:s', $currentUTCTimestamp )
+        $this->timeBounds = array(
+            'start' => date('Y-m-d H:i:s', $currentUTCTimestamp ),
+            'end' => date('Y-m-d H:i:s', $currentUTCTimestamp )
         );
 
-        $this->dateBounds=$dateBounds;
-        $this->timeBounds=$timeBounds;
         $this->doScrapping($this->scrapper->getScrappingUrl( array( date('Y',$currentUTCTimestamp),date('m',$currentUTCTimestamp),date('d',$currentUTCTimestamp))) );
     }
 
@@ -100,7 +101,7 @@ Class GucController extends Controller {
                  *  y se pueden publicar actualizaciones de datos con cambios en magnitud o ubicación geográfica posteriormente.
                  */
 
-                $eventExists=$this->Event->checkForExists($eventData,$this->dateBounds);
+                $eventExists=$this->Event->checkForExists($eventData, $this->dateBounds);
 
                 if ($eventExists['exists']){
                     Debugger::dump('***EVENTO YA EXISTE ****');
