@@ -43,6 +43,8 @@ Class GucController extends Controller {
  * @return [type] [description]
  */
     public function beforeFilter() {
+        parent::beforeFilter();
+        
         $endpoint = 'http://sismologia.cl/events/listados/%YEAR%/%MONTH%/%YEAR%%MONTH%%DAY%.html';
         
         $endpointTokens = [
