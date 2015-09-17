@@ -1,1 +1,1 @@
-# Earthqueake Scrapper
+# Earthquake Scrapper
