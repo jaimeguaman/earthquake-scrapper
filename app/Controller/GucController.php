@@ -121,82 +121,77 @@ Class GucController extends Controller {
         $this->scrapper->domLoad($content);
         $tableList = $this->scrapper->findInDom('table tbody tr');
         
-        //get each table node
         foreach ($tableList as $table) {
             $earthquakeData = [];
 
-            //get each data item
             foreach ($table->find('td') as $key => $tableItem) {
                 $earthquakeData[$key] = $tableItem->text();
             }
 
-            //ignore invalid items
-            if ($earthquakeData) {
-                $dateUTC = $earthquakeData[1];
-                $dateTs = DatesUtils::toTimestamp($dateUTC);
-                $dateSQL = DatesUtils::toSQLDate($dateUTC);
+            if (empty($earthquakeData)) {
+                Debugger::dump('***NO HAY DATOS****');
+                return;
+            }
+            
+            $dateUTC = $earthquakeData[1];
+            $dateTs = DatesUtils::toTimestamp($dateUTC);
+            $dateSQL = DatesUtils::toSQLDate($dateUTC);
 
-                $eventData = [
-                    'lat' => $earthquakeData[2],
-                    'lon' => $earthquakeData[3],
-                    'ts' => $dateSQL,
-                    'hash' => md5($dateTs)
-                ];
+            $eventData = [
+                'lat' => $earthquakeData[2],
+                'lon' => $earthquakeData[3],
+                'ts' => $dateSQL,
+                'hash' => md5($dateTs)
+            ];
 
-                /*  Evitar crear eventos duplicados que muestren erroneamente más de un evento siendo que se trata del mismo
-                 *  pero actualizado.
-                 *  Esto se hace debido a que el primer informe ante un evento, puede ser preliminar
-                 *  y se pueden publicar actualizaciones de datos con cambios en magnitud o ubicación geográfica posteriormente.
-                 */
+            /*  Evitar crear eventos duplicados que muestren erroneamente más de un evento siendo que se trata del mismo
+             *  pero actualizado.
+             *  Esto se hace debido a que el primer informe ante un evento, puede ser preliminar
+             *  y se pueden publicar actualizaciones de datos con cambios en magnitud o ubicación geográfica posteriormente.
+             */
 
-                $eventExists=$this->Event->checkForExists($eventData, $this->dateBounds);
+            $eventExists = $this->Event->checkForExists($eventData, $this->dateBounds);
 
-                if ($eventExists['exists']) {
-                    Debugger::dump('***EVENTO YA EXISTE ****');
-                  //echo ('evento ya existe <br>');
-                    $event = $eventExists;
-                }
-                else {
-                    Debugger::dump('***NO SE ENCONTRO EVENTO, CREANDO ****');
-                   $this->Event->create();
-                   $event = $this->Event->save($eventData);
-                }
-
-                if ($event) {
-                    $metadatum = [
-                        'event_id' => $event['Event']['id'],
-                        'agency_id' => 1,
-                        'lat' => $eventData['lat'],
-                        'lon' => $eventData['lon'],
-                        'ts' => $dateSQL,
-                        'depth' => $earthquakeData[4],
-                        'magnitude' => floatval($earthquakeData[5]),
-                        'geo_reference' => $earthquakeData[6]
-                    ];
-
-                    if (!$eventExists['exists']) {
-                        Debugger::dump('***EVENTO NO EXISTE, SISMO TAMPOCO ****');
-                       $this->EventMetadatum->create();
-                       $earthquake = $this->EventMetadatum->save($metadatum);
-                    }
-                    else {
-                        $earthquakeExists = $this->EventMetadatum->checkForExists($metadatum, $this->dateBounds, $eventExists['Event']['id']);
-                        if ($earthquakeExists['exists']) {
-                            Debugger::dump('***EVENTO EXISTE, SISMO TAMBIEN ****');
-                        }
-                        else {
-                            Debugger::dump('***EVENTO EXISTE, NUEVO SISMO NO. CREANDO NUEVO ASOCIADO A EVENTO****');
-                            $this->EventMetadatum->create();
-                            $earthquake = $this->EventMetadatum->save($metadatum);
-                        }
-
-                    }
-
-                }
-
+            if ($eventExists['exists']) {
+                Debugger::dump('***EVENTO YA EXISTE ****');
+                $event = $eventExists;
             }
             else {
-                Debugger::dump('***NO HAY DATOS****');
+                Debugger::dump('***NO SE ENCONTRO EVENTO, CREANDO ****');
+                $this->Event->create();
+                $event = $this->Event->save($eventData);
+            }
+
+            if ($event) {
+                $metadatum = [
+                    'event_id' => $event['Event']['id'],
+                    'agency_id' => 1,
+                    'lat' => $eventData['lat'],
+                    'lon' => $eventData['lon'],
+                    'ts' => $dateSQL,
+                    'depth' => $earthquakeData[4],
+                    'magnitude' => floatval($earthquakeData[5]),
+                    'geo_reference' => $earthquakeData[6]
+                ];
+
+                if (!$eventExists['exists']) {
+                    Debugger::dump('***EVENTO NO EXISTE, SISMO TAMPOCO ****');
+                    $this->EventMetadatum->create();
+                    $earthquake = $this->EventMetadatum->save($metadatum);
+                }
+                else {
+                    $earthquakeExists = $this->EventMetadatum->checkForExists($metadatum, $this->dateBounds, $eventExists['Event']['id']);
+                    if ($earthquakeExists['exists']) {
+                        Debugger::dump('***EVENTO EXISTE, SISMO TAMBIEN ****');
+                    }
+                    else {
+                        Debugger::dump('***EVENTO EXISTE, NUEVO SISMO NO. CREANDO NUEVO ASOCIADO A EVENTO****');
+                        $this->EventMetadatum->create();
+                        $earthquake = $this->EventMetadatum->save($metadatum);
+                    }
+
+                }
+
             }
         }
 
