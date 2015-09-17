@@ -35,17 +35,16 @@ Class GucController extends ScrapperController {
     public function getFromtoday($mode='verbose'){
         $currentUTCTimestamp=strtotime(date('Y-m-d H:i:s',time() ) . ' + 3 hours');
         $currentUTCDate=date('Y-m-d',$currentUTCTimestamp );
-        
 
         $dateBounds=array(
             'start'=>$currentUTCDate,
             'end'=>$currentUTCDate
         );
+
         $timeBounds=array(
             'start'=>date('Y-m-d H:i:s',$currentUTCTimestamp ),
             'end'=>date('Y-m-d H:i:s',$currentUTCTimestamp )
         );
-
 
         $this->dateBounds=$dateBounds;
         $this->timeBounds=$timeBounds;

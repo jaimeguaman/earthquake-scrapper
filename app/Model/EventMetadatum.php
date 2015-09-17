@@ -51,8 +51,6 @@ class EventMetadatum extends AppModel {
             ));
             
             foreach ($earthquakes as $earthquake){
-                Debugger::log('***FECHA EXISTENTE: ***' . $earthquake['EventMetadatum']['ts']);
-                Debugger::log('***FECHA NUEVO: ***' . $earthquakeData['ts']);
                 $existingEarthquakeDate=$earthquake['EventMetadatum']['ts'];
                 $newEarthquakeDate=$earthquakeData['ts'];
                 if ($existingEarthquakeDate == $newEarthquakeDate){
