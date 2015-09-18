@@ -72,6 +72,7 @@ class DATABASE_CONFIG {
         'encoding' => 'utf8'        
     );
     
+    //data is deprecated dont try it ;)
     public $prod = array(
         'datasource' => 'Database/Mysql',
         'persistent' => false,
