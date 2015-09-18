@@ -1,20 +1,37 @@
 <?php
+/**
+ * Load libs
+ */
 App::uses('Scrapper', 'Lib');
 App::uses('DatesUtils', 'Lib');
 App::uses('Coordinates', 'Lib');
 
 Class GfzController extends Controller {
-
+/**
+ * Load models
+ * @var array
+ */
     public $uses = array(
         'Agency',
         'Event',
         'EventMetadatum'
     );
-
+/**
+ * Scrapper class
+ * @var object
+ */
     private $scrapper;
+
+/**
+ * [$dateBounds description]
+ * @var [type]
+ */
     private $dateBounds;
-    private $timeBounds;
-    
+
+/**
+ * [beforeFilter description]
+ * @return [type] [description]
+ */
     public function beforeFilter(){
         $endpoint = 'http://geofon.gfz-potsdam.de/eqinfo/list.php?datemin=%DATEMIN%';
         $endpoint .= '&datemax=%DATEMAX%&latmin=&latmax=&lonmin=&lonmax=&magmin=2&fmt';
@@ -27,7 +44,13 @@ Class GfzController extends Controller {
 
         $this->scrapper = new Scrapper($endpoint, $endpointTokens);
     }
-    
+
+/**
+ * [getFromDateRange description]
+ * @param  [type] $startDate [description]
+ * @param  [type] $endDate   [description]
+ * @return [type]            [description]
+ */
     public function getFromDateRange($startDate,$endDate){
         $this->dateBounds = array(
             'start'=>Date('Y-m-d', DatesUtils::toTimestamp($startDate)),
@@ -43,6 +66,10 @@ Class GfzController extends Controller {
 
     }
 
+/**
+ * [getFromtoday description]
+ * @return [type]       [description]
+ */
     public function getFromtoday(){
         $currentUTCTimestamp = strtotime(date('Y-m-d H:i:s', time() ));
         $currentUTCDate = date('Y-m-d', $currentUTCTimestamp );
@@ -54,7 +81,11 @@ Class GfzController extends Controller {
 
         $this->doScrapping($this->scrapper->getScrappingUrl( array( date('Y-m-d',$currentUTCTimestamp),date('Y-m-d',$currentUTCTimestamp))) );
     }
-
+/**
+ * [doScrapping description]
+ * @param  [type] $endpoint [description]
+ * @return [type]           [description]
+ */
     private function doScrapping($endpoint){
         $event = null;
         $earthquake = null;

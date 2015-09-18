@@ -33,12 +33,6 @@ Class GucController extends Controller {
     private $dateBounds;
 
 /**
- * [$timeBounds description]
- * @var [type]
- */
-    private $timeBounds;
-    
-/**
  * [beforeFilter description]
  * @return [type] [description]
  */
