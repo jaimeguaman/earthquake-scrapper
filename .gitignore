@@ -16,5 +16,6 @@
 /vendors/*
 
 DS_*
+.DS_Store
 .thumb*
 apache-*
