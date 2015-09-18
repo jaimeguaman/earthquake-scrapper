@@ -16,8 +16,6 @@ Class GfzController extends Controller {
     private $timeBounds;
     
     public function beforeFilter(){
-        date_default_timezone_set('UTC');
-
         $endpoint = 'http://geofon.gfz-potsdam.de/eqinfo/list.php?datemin=%DATEMIN%';
         $endpoint .= '&datemax=%DATEMAX%&latmin=&latmax=&lonmin=&lonmax=&magmin=2&fmt';
         $endpoint .= '=html&nmax=200';
