@@ -40,9 +40,7 @@ Class GfzController extends Controller {
         DatesUtils::rangeLoop($startDate,$endDate,function($day,$month,$year) use ($self){
             $datemin = $year . '-' . $month . '-' . $day;
             $datemax = $year . '-' . $month . '-' . $day;
-            debugger::dump($self->scrapper->getScrappingUrl(array($datemin, $datemax)));
-
-            //$self->doScrapping($self->scrapper->getScrappingUrl(array($datemin, $datemax)));
+            $self->doScrapping($self->scrapper->getScrappingUrl(array($datemin, $datemax)));
         }); 
 
     }
