@@ -53,7 +53,7 @@ Class Scrapper {
  * @param  boolean $persistent [description]
  * @return [type]              [description]
  */
-    public function getContent($endpoint,$persistent = false) {
+    public function getContent($endpoint, $persistent = false) {
         $content = null;
         do {
             $content = file_get_contents($endpoint); 
