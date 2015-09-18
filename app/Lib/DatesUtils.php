@@ -41,7 +41,7 @@ Class DatesUtils {
  * @return [type]            [description]
  */
     public static function toReadableDate($timestamp) {
-        return date('d-m-Y H:i:s',$timestamp);
+        return date('Y-m-d H:i:s', $timestamp);
     }
 
 /**
