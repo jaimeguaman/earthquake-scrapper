@@ -40,9 +40,7 @@ Class Coordinates {
             $result *= -1;
         }
 
-        //var_dump($deg);
-
-        return $result;
+        return round($result, 3);
     }
 
     /**
