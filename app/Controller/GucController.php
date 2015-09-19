@@ -82,11 +82,6 @@ Class GucController extends Controller {
             'end' => $currentUTCDate
         ];
 
-        $this->timeBounds = [
-            'start' => date('Y-m-d H:i:s', $currentUTCTimestamp),
-            'end' => date('Y-m-d H:i:s', $currentUTCTimestamp)
-        ];
-
         $this->doScrapping($this->scrapper->getScrappingUrl([
             date('Y', $currentUTCTimestamp),
             date('m', $currentUTCTimestamp),
@@ -157,6 +152,11 @@ Class GucController extends Controller {
             }
 
             if ($event) {
+                $magnitude_type = 'Mw';
+                if (!strpos($earthquakeData[5], 'Mw')){
+                    $magnitude_type = 'Ml';
+                }
+
                 $metadatum = [
                     'event_id' => $event['Event']['id'],
                     'agency_id' => 1,
@@ -165,7 +165,8 @@ Class GucController extends Controller {
                     'ts' => $dateSQL,
                     'depth' => $earthquakeData[4],
                     'magnitude' => floatval($earthquakeData[5]),
-                    'geo_reference' => $earthquakeData[6]
+                    'geo_reference' => $earthquakeData[6],
+                    'magnitude_type' => $magnitude_type
                 ];
 
                 if (!$eventExists['exists']) {

@@ -171,7 +171,14 @@ Class GfzController extends Controller {
                     'ts' => $dateSQL,
                     'depth' => $earthquakeData[4],
                     'magnitude' => floatval($earthquakeData[1]),
-                    'geo_reference' => $earthquakeData[7]
+                    'geo_reference' => $earthquakeData[7],
+                    /*
+                        at the time I dont know magnitude type used by gfz
+                        without check event specific page. I dont want to do that.
+                        to be more accurate use Mw or Ml based on this
+                        http://earthquake.usgs.gov/earthquakes/eventpage/terms.php#magnitude
+                    */
+                    'magnitude_type' => $earthquakeData[1] > 3.5 ? 'Mw' : 'Ml'
                 );
 
                 if (!$eventExists['exists']){

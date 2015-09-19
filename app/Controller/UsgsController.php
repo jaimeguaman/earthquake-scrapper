@@ -146,7 +146,8 @@ Class UsgsController extends Controller {
                     'ts' => $dateSQL,
                     'depth' => $earthquakeData->geometry->coordinates[2],
                     'magnitude' => floatval($earthquakeData->properties->mag),
-                    'geo_reference' => $earthquakeData->properties->place
+                    'geo_reference' => $earthquakeData->properties->place,
+                    'magnitude_type' => $earthquakeData->properties->magType
                 ];
 
                 if (!$eventExists['exists']) {
